@@ -6,6 +6,12 @@
         .hidden {
             display: none;
         }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
     </style>
     <body>
         <form id="form">
@@ -15,10 +21,33 @@
         <div id="error" class="hidden">Something went wrong!</div>
         <ul id="todos">
             {% for item in data %}
-            <li>{{ item.description }}</li>
+            <li><input data-id="{{ item.id }}" class="check-completed" type="checkbox" {% if item.completed %}checked{% endif %} />{{ item.description }}</li>
             {% endfor %}
         </ul>
         <script>
+            const checkboxes = document.querySelectorAll('.check-completed');
+            checkboxes.forEach(checkbox => {
+                checkbox.onchange = function(e) {
+                    console.log('event', e);
+                    const newCompleted = e.target.checked;
+                    const todoId = e.target.dataset.id;
+                    fetch(`/todos/${todoId}/set-completed`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            'completed': newCompleted
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function() {
+                        document.getElementById('error').className = 'hidden';
+                    })
+                    .catch(function(e) {
+                        document.getElementById('error').className = '';
+                    })
+                }
+            })
             document.getElementById('form').onsubmit = function(e) {
                 e.preventDefault();
                 fetch('/new', {
