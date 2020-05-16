@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Todo App</title>
+    </head>
+    <body>
+        <form action="/new" method="post">
+            <input type="text" name="description" />
+            <button type="submit">add</button>
+        </form>
+        <ul>
+            {% for item in data %}
+            <li>{{ item.description }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
