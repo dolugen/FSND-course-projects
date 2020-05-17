@@ -13,12 +13,25 @@ class Todo(db.Model):
   id = db.Column(db.Integer(), primary_key=True)
   description = db.Column(db.String(), nullable=False)
   completed = db.Column(db.Boolean(), default=False)
+  todolist = db.Column(db.Integer(), db.ForeignKey('todolists.id'), nullable=False)
 
-db.create_all()
+class TodoList(db.Model):
+    __tablename__ = 'todolists'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(), nullable=False)
+    todos = db.relationship('Todo', backref='list')
+
 
 @app.route('/')
 def index():
-    return render_template('index.html', data=Todo.query.order_by('id').all())
+    return redirect(url_for('get_todo_list', list_id=1))
+
+@app.route('/list/<list_id>/')
+def get_todo_list(list_id):
+    lists = TodoList.query.all()
+    active_list=TodoList.query.get(list_id)
+    todos = Todo.query.filter_by(todolist=list_id).order_by('id').all()
+    return render_template('index.html', active_list=active_list, lists=lists, todos=todos)
 
 @app.route('/new', methods=['POST'])
 def add_new():
@@ -56,3 +69,15 @@ def set_completed(todo_id):
     finally:
         db.session.close()
     return redirect(url_for('index'))
+
+@app.route('/todos/<todo_id>/', methods=['DELETE'])
+def todo_delete(todo_id):
+    try:
+        todo = Todo.query.get(todo_id)
+        db.session.delete(todo)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return jsonify({'success': True})
