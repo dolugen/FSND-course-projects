@@ -47,6 +47,26 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String)
     shows = db.relationship('Show', backref='venue')
 
+    @property
+    def upcoming_shows(self):
+      shows = Show.query.filter(Show.venue_id == self.id)
+      upcoming_shows = shows.filter(Show.start_time > datetime.now())
+      return upcoming_shows.all()
+    
+    @property
+    def upcoming_shows_count(self):
+      return len(self.upcoming_shows)
+    
+    @property
+    def past_shows(self):
+      shows = Show.query.filter(Show.venue_id == self.id)
+      past_shows = shows.filter(Show.start_time < datetime.now())
+      return past_shows.all()
+
+    @property
+    def past_shows_count(self):
+      return len(self.past_shows)
+
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
