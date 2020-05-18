@@ -50,7 +50,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -289,10 +289,14 @@ def edit_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   form = ArtistForm()
-  artist = Artist.query.get(artist_id)
-  form.populate_obj(artist)
-  db.session.commit()
-  db.session.close()
+  if form.validate():
+    artist = Artist.query.get(artist_id)
+    form.populate_obj(artist)
+    db.session.commit()
+    db.session.close()
+  else:
+    breakpoint()
+    flash('Something went wront, please check your input')
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
