@@ -4,6 +4,7 @@
 
 import json
 import dateutil.parser
+from datetime import datetime
 import babel
 import sys
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
@@ -63,6 +64,25 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String(500))
     shows = db.relationship('Show', backref='artist')
   
+    @property
+    def upcoming_shows(self):
+      shows = Show.query.filter(Show.artist_id == self.id)
+      upcoming_shows = shows.filter(Show.start_time > datetime.now())
+      return upcoming_shows.all()
+    
+    @property
+    def upcoming_shows_count(self):
+      return len(self.upcoming_shows)
+    
+    @property
+    def past_shows(self):
+      shows = Show.query.filter(Show.artist_id == self.id)
+      past_shows = shows.filter(Show.start_time < datetime.now())
+      return past_shows.all()
+
+    @property
+    def past_shows_count(self):
+      return len(self.past_shows)
 
 class Show(db.Model):
   id = db.Column(db.Integer, primary_key=True)
@@ -70,8 +90,6 @@ class Show(db.Model):
   venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
   start_time = db.Column(db.DateTime, nullable=False)
 
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -101,8 +119,7 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
+  # TODO: num_shows should be aggregated based on number of upcoming shows per venue.
   data=[{
     "city": "San Francisco",
     "state": "CA",
