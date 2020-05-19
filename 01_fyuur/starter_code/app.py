@@ -15,7 +15,7 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import case
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
+from flask_wtf import Form, csrf
 from forms import *
 from flask_wtf.csrf import CSRFProtect
 #----------------------------------------------------------------------------#
@@ -126,6 +126,7 @@ def venues():
   return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
+@csrf.exempt
 def search_venues():
   term = request.form.get('search_term', '')
   result = Venue.query.filter(Venue.name.ilike(f'%{term}%'))
@@ -202,6 +203,7 @@ def artists():
   return render_template('pages/artists.html', artists=artists)
 
 @app.route('/artists/search', methods=['POST'])
+@csrf.exempt
 def search_artists():
   term = request.form.get('search_term', '')
   artists = Artist.query.filter(Artist.name.ilike(f'%{term}%'))
