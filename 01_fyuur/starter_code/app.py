@@ -17,11 +17,13 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from flask_wtf.csrf import CSRFProtect
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
@@ -166,10 +168,16 @@ def create_venue_submission():
   form = VenueForm()
   try:
     venue = Venue()
-    form.populate_obj(venue)
-    db.session.add(venue)
-    db.session.commit()
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    if form.validate():
+      form.populate_obj(venue)
+      db.session.add(venue)
+      db.session.commit()
+      flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    else:
+      for error_group in form.errors.values():
+        for error in error_group:
+          flash(error)
+      return redirect(url_for('create_venue_form'))
   except:
     db.session.rollback()
     flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
@@ -300,10 +308,16 @@ def create_artist_submission():
   form = ArtistForm()
   try:
     artist = Artist()
-    form.populate_obj(artist)
-    db.session.add(artist)
-    db.session.commit()
-    flash('Artist was successfully listed!')
+    if form.validate():
+      form.populate_obj(artist)
+      db.session.add(artist)
+      db.session.commit()
+      flash('Artist was successfully listed!')
+    else:
+      for error_group in form.errors.values():
+        for error in error_group:
+          flash(error)
+      return redirect(url_for('create_artist_form'))
   except:
     db.session.rollback()
     flash('An error occurred. Artist could not be listed.')

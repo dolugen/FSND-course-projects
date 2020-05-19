@@ -1,8 +1,39 @@
+import enum
 from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, TextAreaField
 from wtforms.fields.html5 import URLField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, AnyOf, URL, Optional
+
+class Genres(str, enum.Enum):
+    Alternative = 'Alternative'
+    Blues = 'Blues'
+    Classical = 'Classical'
+    Country = 'Country'
+    Electronic = 'Electronic'
+    Folk = 'Folk'
+    Funk = 'Funk'
+    Hip_Hop = 'Hip-Hop'
+    Heavy_Metal = 'Heavy Metal'
+    Instrumental = 'Instrumental'
+    Jazz = 'Jazz'
+    Musical_Theatre = 'Musical Theatre'
+    Pop = 'Pop'
+    Punk = 'Punk'
+    R_B = 'R&B'
+    Reggae = 'Reggae'
+    Rock_n_Roll = 'Rock n Roll'
+    Soul = 'Soul'
+    Other = 'Other'
+
+    @classmethod
+    def values(cls):
+        return [g.value for g in cls]
+
+    @classmethod
+    def field_choices(cls):
+        return [(g.value, g.value) for g in cls]
+
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -92,30 +123,10 @@ class VenueForm(Form):
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
+        choices=Genres.field_choices()
     )
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[Optional(), URL()]
     )
     website = URLField('website')
     seeking_talent = BooleanField('seeking_talent')
@@ -191,33 +202,15 @@ class ArtistForm(Form):
     image_link = URLField(
         'image_link'
     )
+
+    # flask-wtf validates the input based on choices,
+    # there was no need to implement a custom validator for genres
     genres = SelectMultipleField(
-        # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
-    )
+        choices=Genres.field_choices())
+    
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[Optional(), URL()]
     )
 
     website = URLField('website')
