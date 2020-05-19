@@ -6,6 +6,11 @@
 		<h1 class="monospace">
 			{{ artist.name }}
 		</h1>
+		<div>
+			<a href="/artists/{{ artist.id }}/edit">
+				<button class="btn btn-default">Edit</button>
+			</a>
+		</div>
 		<p class="subtitle">
 			ID: {{ artist.id }}
 		</p>
@@ -44,9 +49,9 @@
 	</div>
 </div>
 <section>
-	<h2 class="monospace">{{ artist.upcoming_shows_count }} Upcoming {% if artist.upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
+	<h2 class="monospace">{{ upcoming_shows_count }} Upcoming {% if upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
 	<div class="row">
-		{%for show in artist.upcoming_shows %}
+		{%for show in upcoming_shows %}
 		<div class="col-sm-4">
 			<div class="tile tile-show">
 				<img src="{{ show.venue.image_link }}" alt="Show Venue Image" />

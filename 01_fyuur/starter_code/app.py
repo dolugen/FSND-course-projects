@@ -31,7 +31,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -47,29 +47,9 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String)
     shows = db.relationship('Show', backref='venue')
 
-    @property
-    def upcoming_shows(self):
-      shows = Show.query.filter(Show.venue_id == self.id)
-      upcoming_shows = shows.filter(Show.start_time > datetime.now())
-      return upcoming_shows.all()
-    
-    @property
-    def upcoming_shows_count(self):
-      return len(self.upcoming_shows)
-    
-    @property
-    def past_shows(self):
-      shows = Show.query.filter(Show.venue_id == self.id)
-      past_shows = shows.filter(Show.start_time < datetime.now())
-      return past_shows.all()
-
-    @property
-    def past_shows_count(self):
-      return len(self.past_shows)
-
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -84,30 +64,12 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String(500))
     shows = db.relationship('Show', backref='artist')
   
-    @property
-    def upcoming_shows(self):
-      shows = Show.query.filter(Show.artist_id == self.id)
-      upcoming_shows = shows.filter(Show.start_time > datetime.now())
-      return upcoming_shows.all()
-    
-    @property
-    def upcoming_shows_count(self):
-      return len(self.upcoming_shows)
-    
-    @property
-    def past_shows(self):
-      shows = Show.query.filter(Show.artist_id == self.id)
-      past_shows = shows.filter(Show.start_time < datetime.now())
-      return past_shows.all()
-
-    @property
-    def past_shows_count(self):
-      return len(self.past_shows)
 
 class Show(db.Model):
+  __tablename__ = 'shows'
   id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+  artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
+  venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
   start_time = db.Column(db.DateTime, nullable=False)
 
 
@@ -184,85 +146,23 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  data1={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-    "past_shows": [{
-      "artist_id": 4,
-      "artist_name": "Guns N Petals",
-      "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-      "start_time": "2019-05-21T21:30:00.000Z"
-    }],
-    "upcoming_shows": [],
-    "past_shows_count": 1,
-    "upcoming_shows_count": 0,
-  }
-  data2={
-    "id": 2,
-    "name": "The Dueling Pianos Bar",
-    "genres": ["Classical", "R&B", "Hip-Hop"],
-    "address": "335 Delancey Street",
-    "city": "New York",
-    "state": "NY",
-    "phone": "914-003-1132",
-    "website": "https://www.theduelingpianos.com",
-    "facebook_link": "https://www.facebook.com/theduelingpianos",
-    "seeking_talent": False,
-    "image_link": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
-    "past_shows": [],
-    "upcoming_shows": [],
-    "past_shows_count": 0,
-    "upcoming_shows_count": 0,
-  }
-  data3={
-    "id": 3,
-    "name": "Park Square Live Music & Coffee",
-    "genres": ["Rock n Roll", "Jazz", "Classical", "Folk"],
-    "address": "34 Whiskey Moore Ave",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "415-000-1234",
-    "website": "https://www.parksquarelivemusicandcoffee.com",
-    "facebook_link": "https://www.facebook.com/ParkSquareLiveMusicAndCoffee",
-    "seeking_talent": False,
-    "image_link": "https://images.unsplash.com/photo-1485686531765-ba63b07845a7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=747&q=80",
-    "past_shows": [{
-      "artist_id": 5,
-      "artist_name": "Matt Quevedo",
-      "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-      "start_time": "2019-06-15T23:00:00.000Z"
-    }],
-    "upcoming_shows": [{
-      "artist_id": 6,
-      "artist_name": "The Wild Sax Band",
-      "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-      "start_time": "2035-04-01T20:00:00.000Z"
-    }, {
-      "artist_id": 6,
-      "artist_name": "The Wild Sax Band",
-      "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-      "start_time": "2035-04-08T20:00:00.000Z"
-    }, {
-      "artist_id": 6,
-      "artist_name": "The Wild Sax Band",
-      "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-      "start_time": "2035-04-15T20:00:00.000Z"
-    }],
-    "past_shows_count": 1,
-    "upcoming_shows_count": 1,
-  }
   data = Venue.query.get(venue_id)
-  return render_template('pages/show_venue.html', venue=data)
+  upcoming_shows_query = Show.query\
+                      .filter(Show.venue_id == venue_id)\
+                      .filter(Show.start_time > datetime.now())
+  upcoming_shows = upcoming_shows_query.all()
+  upcoming_shows_count = upcoming_shows_query.count()
+  past_shows_query = Show.query\
+                       .filter(Show.venue_id == venue_id)\
+                      .filter(Show.start_time < datetime.now())
+  past_shows = past_shows_query.all()
+  past_shows_count = past_shows_query.count()
+  return render_template('pages/show_venue.html',
+                        venue=data,
+                        upcoming_shows=upcoming_shows,
+                        upcoming_shows_count=upcoming_shows_count,
+                        past_shows=past_shows,
+                        past_shows_count=past_shows_count)
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -317,7 +217,22 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   artist = Artist.query.get(artist_id)
-  return render_template('pages/show_artist.html', artist=artist)
+  upcoming_shows_query = Show.query\
+                      .filter(Show.artist_id == artist_id)\
+                      .filter(Show.start_time > datetime.now())
+  upcoming_shows = upcoming_shows_query.all()
+  upcoming_shows_count = upcoming_shows_query.count()
+  past_shows_query = Show.query\
+                       .filter(Show.artist_id == artist_id)\
+                      .filter(Show.start_time < datetime.now())
+  past_shows = past_shows_query.all()
+  past_shows_count = past_shows_query.count()
+  return render_template('pages/show_artist.html',
+                        artist=artist,
+                        upcoming_shows=upcoming_shows,
+                        upcoming_shows_count=upcoming_shows_count,
+                        past_shows=past_shows,
+                        past_shows_count=past_shows_count)
 
 #  Update
 #  ----------------------------------------------------------------
