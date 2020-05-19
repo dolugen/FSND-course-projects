@@ -11,6 +11,8 @@ from flask import Flask, render_template, request, Response, flash, redirect, ur
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy import func
+from sqlalchemy.sql.expression import case
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -101,32 +103,19 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
   data = []
   areas = Venue.query.distinct('city', 'state').all()
   for area in areas:
-    venues = Venue.query.filter(Venue.city == area.city, Venue.state == area.state).all()
+    venues = db.session.query(
+                          Venue.id,
+                          Venue.name,
+                          func.sum(
+                            case([(Show.start_time > datetime.now(), 1)], else_=0
+                          )).label('num_upcoming_shows'))\
+                        .outerjoin(Show)\
+                        .group_by(Venue.id, Venue.name)\
+                        .filter(Venue.city == area.city, Venue.state == area.state)\
+                        .all()
     data.append({
       'city': area.city,
       'state': area.state,
