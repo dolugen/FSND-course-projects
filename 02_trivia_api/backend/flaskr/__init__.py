@@ -68,13 +68,20 @@ def create_app(test_config=None):
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
     '''Returns a list of questions for a given category ID'''
-    result = Question.query.join(Category)\
-                      .filter(Category.id == category_id).all()
+    result = Question.query.filter(Question.category == category_id).all()
     result = [q.format() for q in result]
     
     return jsonify({
       'success': True,
       'questions': result
+    })
+
+  
+  @app.route('/categories')
+  def list_categories():
+    categories = dict([(c.id, c.type.lower()) for c in Category.query.all()])
+    return jsonify({
+      'categories': categories 
     })
 
   '''
