@@ -1,6 +1,6 @@
 import os
 import unittest
-import json
+import tempfile
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app, QUESTIONS_PER_PAGE
@@ -14,23 +14,26 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client()
-        self.database_name = "trivia_test"
-        self.database_path = "postgres://dulguun:dulguun@{}/{}".format('localhost:5432', self.database_name)
+        
+        # designate a temporary file to use as sqlite3
+        self._db_fd, self.app.config['DATABASE'] = tempfile.mkstemp()
+        self.app.config['TESTING'] = True
+        self.database_path = f"sqlite:///{self.app.config['DATABASE']}"
         setup_db(self.app, self.database_path)
 
-        # binds the app to the current context
+        # populate the test database with data
         with self.app.app_context():
-            self.db = SQLAlchemy()
-            self.db.init_app(self.app)
-            # TODO: configure Sqlite
-            # TODO: load trivia.psql
-            # create all tables
+            self.db = SQLAlchemy(self.app)
             self.db.create_all()
+            with self.app.open_resource('../test_data/trivia-sqlite3-inserts.sql') as f:
+                for line in f.readlines():
+                    self.db.engine.execute(line.decode('utf8'))
+
     
     def tearDown(self):
-        """Executed after reach test"""
-        # TODO: drop sqlite
-        pass
+        # cleanup the test database
+        os.close(self._db_fd)
+        os.unlink(self.app.config['DATABASE'])
 
     """
     TODO
@@ -40,7 +43,7 @@ class TriviaTestCase(unittest.TestCase):
         response = self.client.get('/questions')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
-        # number of questions in the test database, source: ./trivia.psql
+        # number of questions in the test database
         self.assertEqual(data['total_questions'], 19)
         self.assertGreater(len(data['questions']), 0)
         self.assertIn('categories', data)

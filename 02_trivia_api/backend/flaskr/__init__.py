@@ -109,7 +109,6 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def add_question():
-    breakpoint()
     question = Question(**request.get_json())
     question.insert()
     return jsonify({
