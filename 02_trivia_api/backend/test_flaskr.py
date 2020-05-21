@@ -35,11 +35,8 @@ class TriviaTestCase(unittest.TestCase):
         os.close(self._db_fd)
         os.unlink(self.app.config['DATABASE'])
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
     def test_get_questions(self):
+        '''Test the list of questions'''
         response = self.client.get('/questions')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
@@ -50,6 +47,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertIn('current_category', data)
     
     def test_get_questions_pagination(self):
+        '''Test pagination with default page size'''
         response_page1 = self.client.get('/questions?page=1')
         self.assertEqual(response_page1.status_code, 200)
         data = response_page1.get_json()
@@ -82,17 +80,27 @@ class TriviaTestCase(unittest.TestCase):
         response = self.client.get('/questions?page=2&limit=100')
         self.assertEqual(response.status_code, 404)
     
+    def test_page_size_small(self):
+        '''Test request with a small page size'''
+        pass
+    
     def test_questions_by_category(self):
         response = self.client.get('/categories/1/questions')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertGreater(len(data['questions']), 0)
     
+    def test_questions_from_nonexistent_category(self):
+        pass
+    
     def test_list_categories(self):
         response = self.client.get('/categories')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertGreater(len(data['categories']), 0)
+    
+    def test_add_categories(self):
+        '''is this in scope? if not test that 405 is returned'''
     
     def test_search(self):
         response = self.client.get(f'/questions?searchTerm=movie')
@@ -102,10 +110,16 @@ class TriviaTestCase(unittest.TestCase):
         for question in data['questions']:
             self.assertIn('movie', question['question'].lower())
     
+    def test_search_empty(self):
+        '''Test search for a non-existing question'''
+        pass
+    
     def test_add_question(self):
         questions_initial = self.client.get('/questions').get_json()
+        # make note how many questions there are 
         total_questions_initial = questions_initial['total_questions']
 
+        # non-trivia alert!
         question = {
             'question': 'If a tree falls in a forest and no one is around to hear it, does it make a sound?',
             'answer': 'It depends on how you look at it.',
@@ -115,8 +129,15 @@ class TriviaTestCase(unittest.TestCase):
         response = self.client.post('/questions', json=question)
         self.assertEqual(response.status_code, 201)
         
-        questions = self.client.get('/questions').get_json()
-        self.assertEqual(questions['total_questions'], total_questions_initial + 1)
+        result = self.client.get('/questions?limit=100').get_json()
+        # the count was incremented
+        self.assertEqual(result['total_questions'], total_questions_initial + 1)
+        # the last question is the one we added
+        self.assertEqual(question['question'], result['questions'][-1]['question'])
+    
+    def test_add_question_bad_request(self):
+        '''Test that adding a question while missing fields fails'''
+        pass
     
 
 
