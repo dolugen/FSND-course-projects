@@ -1,10 +1,10 @@
 import os
-from sqlalchemy import Column, String, Integer, create_engine
+from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from flask_sqlalchemy import SQLAlchemy
 import json
 
 database_name = "trivia"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+database_path = "postgres://dulguun:dulguun@{}/{}".format('localhost:5432', database_name)
 
 db = SQLAlchemy()
 
@@ -29,7 +29,7 @@ class Question(db.Model):
   id = Column(Integer, primary_key=True)
   question = Column(String)
   answer = Column(String)
-  category = Column(String)
+  category = Column(Integer, ForeignKey('categories.id'))
   difficulty = Column(Integer)
 
   def __init__(self, question, answer, category, difficulty):
