@@ -108,7 +108,7 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def search():
-    search_term = request.args.get('searchTerm', '', type=str)
+    search_term = request.get_json().get('searchTerm', '')
     questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
     return jsonify({
       'questions': [q.format() for q in questions],
