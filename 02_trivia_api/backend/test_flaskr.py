@@ -76,6 +76,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertGreater(len(data['categories']), 0)
+    
+    def test_search(self):
+        response = self.client.post('/questions', data={'searchTerm': 'movie'})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertGreater(len(data['questions']), 0)
 
 
 # Make the tests conveniently executable

@@ -34,21 +34,13 @@ def create_app(test_config=None):
       response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
       return response 
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
-
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
-  @app.route('/questions')
+  
+  @app.route('/questions', methods=['GET'])
   def list_questions():
-    '''List questions'''
+    '''
+    Returns a list of questions. This endpoint is paginated.
+    Also includes the categories list, and additional metadata.
+    '''
     page, total_questions, questions = paginate(request, [q.format() for q in Question.query.all()])
    
     if len(questions) == 0:
@@ -79,6 +71,7 @@ def create_app(test_config=None):
   
   @app.route('/categories')
   def list_categories():
+    '''Returns the list of categories'''
     categories = dict([(c.id, c.type.lower()) for c in Category.query.all()])
     return jsonify({
       'categories': categories 
@@ -113,15 +106,14 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
-
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+  @app.route('/questions', methods=['POST'])
+  def search():
+    search_term = request.args.get('searchTerm', '', type=str)
+    questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+    return jsonify({
+      'questions': [q.format() for q in questions],
+      'total_categories': dict([(c.id, c.type.lower()) for c in Category.query.all()])
+    })
 
 
   '''
@@ -136,18 +128,29 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
 
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
   @app.errorhandler(404)
-  def notfound(error):
+  def not_found(error):
     return jsonify({
       'message': 'Not found',
       'success': False
     }), 404
   
+
+  @app.errorhandler(405)
+  def not_allowed(error):
+    return jsonify({
+      'message': 'Method not allowed',
+      'success': False
+    }), 405
+
+  
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      'message': 'Unprocessable Entity',
+      'success': False
+    }), 422
+
   return app
 
     
