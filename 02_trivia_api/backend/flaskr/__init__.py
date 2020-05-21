@@ -17,8 +17,9 @@ def paginate(request, items):
   - the current page items
   '''
   page = request.args.get('page', 1, type=int)
-  start = (page - 1) * QUESTIONS_PER_PAGE
-  end = start + QUESTIONS_PER_PAGE
+  page_size = request.args.get('limit', QUESTIONS_PER_PAGE, type=int)
+  start = (page - 1) * page_size
+  end = start + page_size
   return page, len(items), items[start:end]
 
 def create_app(test_config=None):
@@ -38,10 +39,21 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['GET'])
   def list_questions():
     '''
-    Returns a list of questions. This endpoint is paginated.
-    Also includes the categories list, and additional metadata.
+    Returns a list of questions.
+    Optional parameters:
+    - page: Page number (default: 1)
+    - limit: Page size (default: QUESTIONS_PER_PAGE)
+    - searchTerm: Question string filter
+    Additional return fields:
+    - categories: All categories in {category_id: category_name} form
+    - total_questions: Total number of questions available
     '''
-    page, total_questions, questions = paginate(request, [q.format() for q in Question.query.all()])
+    query = Question.query
+    search_term = request.args.get('searchTerm')
+    if search_term:
+      query = query.filter(Question.question.ilike(f'%{search_term}%'))
+    
+    page, total_questions, questions = paginate(request, [q.format() for q in query.all()])
    
     if len(questions) == 0:
       abort(404)
@@ -95,25 +107,15 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
-
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
   @app.route('/questions', methods=['POST'])
-  def search():
-    search_term = request.get_json().get('searchTerm', '')
-    questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+  def add_question():
+    breakpoint()
+    question = Question(**request.get_json())
+    question.insert()
     return jsonify({
-      'questions': [q.format() for q in questions],
-      'total_categories': dict([(c.id, c.type.lower()) for c in Category.query.all()])
-    })
+      'success': True,
+    }), 201
+
 
 
   '''
