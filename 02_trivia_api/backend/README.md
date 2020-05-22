@@ -160,7 +160,7 @@ Example request:
 }
 ```
 
-`DELETE /questions/<question_id>`
+### `DELETE /questions/<question_id>`
 - Deletes a question from the app.
 - Request Path Arguments: `question_id`
 - Returns:
@@ -168,7 +168,7 @@ Example request:
   - `404 Not Found` response when an unknown question was specified.
   - `400 Bad Request` response if given argument was invalid.
 
-`POST /quizzes`
+### `POST /quizzes`
 - Handles the quiz gameplay, provides questions.
 - Request body:
   - `previous_questions`: Array of question IDs that the player already seen (optional)
