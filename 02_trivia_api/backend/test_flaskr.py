@@ -82,25 +82,37 @@ class TriviaTestCase(unittest.TestCase):
     
     def test_page_size_small(self):
         '''Test request with a small page size'''
-        pass
+        response = self.client.get('/questions?limit=1')
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(len(data['questions']), 1)
     
     def test_questions_by_category(self):
+        '''Test listing questions by category'''
         response = self.client.get('/categories/1/questions')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertGreater(len(data['questions']), 0)
     
     def test_questions_from_nonexistent_category(self):
-        pass
+        '''Test listing questions from nonexisting category'''
+        # test data has only <10 records
+        response = self.client.get('/categories/1000/questions')
+        self.assertEqual(response.status_code, 404)
     
     def test_list_categories(self):
+        '''Testing listing categories'''
         response = self.client.get('/categories')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertGreater(len(data['categories']), 0)
     
-    def test_add_categories(self):
-        '''is this in scope? if not test that 405 is returned'''
+    def test_add_category_fails(self):
+        '''Test that adding categories is not supported.'''
+        response = self.client.post('/categories', data={type: 'New Category'})
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.get_json()['message'], 'Method Not Allowed')
+
     
     def test_search(self):
         response = self.client.get(f'/questions?searchTerm=movie')

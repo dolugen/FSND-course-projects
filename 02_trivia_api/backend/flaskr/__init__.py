@@ -72,6 +72,10 @@ def create_app(test_config=None):
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
     '''Returns a list of questions for a given category ID'''
+    category = Category.query.get(category_id)
+    if not category:
+      abort(404)
+
     result = Question.query.filter(Question.category == category_id).all()
     result = [q.format() for q in result]
     
