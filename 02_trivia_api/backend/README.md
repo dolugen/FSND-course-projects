@@ -60,7 +60,7 @@ Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` d
 
 ## Endpoints
 
-`GET /categories`
+### `GET /categories`
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns:
@@ -78,7 +78,7 @@ Example response:
 }
 ```
 
-`GET /categories/<category_id>/questions`
+### `GET /categories/<category_id>/questions`
 - Returns an object that contains a list of questions for the given category.
 - Request Path Arguments: `category_id`
 - Returns:
@@ -100,7 +100,7 @@ Example response:
 }
 ```
 
-`GET /questions`
+### `GET /questions`
 - Returns an object that contains questions.
 - Request Arguments:
   - `page`: Page number (optional, default: 1)
@@ -139,7 +139,7 @@ Example response:
 }
 ```
 
-`POST /questions`
+### `POST /questions`
 - Adds a new question. Accepts a question object.
 - Request Body:
   - `question`: Question string
