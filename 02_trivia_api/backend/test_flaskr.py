@@ -65,7 +65,7 @@ class TriviaTestCase(unittest.TestCase):
         response_page3 = self.client.get('/questions?page=3')
         self.assertEqual(response_page3.status_code, 404)
         data = response_page3.get_json()
-        self.assertEqual(data['message'], 'Not found')
+        self.assertEqual(data['message'], 'Not Found')
         self.assertFalse(data['success'])
     
     def test_page_size(self):
@@ -137,8 +137,8 @@ class TriviaTestCase(unittest.TestCase):
     
     def test_add_question_bad_request(self):
         '''Test that adding a question while missing fields fails'''
-        pass
-    
+        response = self.client.post('/questions', json={})
+        self.assertEqual(response.status_code, 400)
 
 
 # Make the tests conveniently executable

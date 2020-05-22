@@ -109,13 +109,14 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def add_question():
-    question = Question(**request.get_json())
-    question.insert()
-    return jsonify({
-      'success': True,
-    }), 201
-
-
+    try:
+      question = Question(**request.get_json())
+      question.insert()
+      return jsonify({
+        'success': True,
+      }), 201
+    except TypeError:
+      abort(400)
 
   '''
   @TODO: 
@@ -128,11 +129,17 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.errorhandler(400)
+  def not_found(error):
+    return jsonify({
+      'message': 'Bad Request',
+      'success': False
+    }), 400
 
   @app.errorhandler(404)
   def not_found(error):
     return jsonify({
-      'message': 'Not found',
+      'message': 'Not Found',
       'success': False
     }), 404
   
@@ -140,7 +147,7 @@ def create_app(test_config=None):
   @app.errorhandler(405)
   def not_allowed(error):
     return jsonify({
-      'message': 'Method not allowed',
+      'message': 'Method Not Allowed',
       'success': False
     }), 405
 
