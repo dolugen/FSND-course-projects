@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from sqlalchemy.sql.expression import func
 import random
 
 from models import setup_db, Question, Category
@@ -121,23 +122,50 @@ def create_app(test_config=None):
     except TypeError:
       abort(400)
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
+  
+  @app.route('/quizzes', methods=['POST'])
+  def quizzes():
+    '''Endpoint handling quiz gameplay'''
+    try: 
+      query = Question.query
+            
+      data = request.get_json()
+      if data:
+        previous_questions = request.get_json().get('previous_questions')
+        quiz_category_id = request.get_json().get('quiz_category', {}).get('id')
+        if quiz_category_id:
+          category = Category.query.get(quiz_category_id)
+          if category:
+            query = query.filter(Question.category == category.id)
+          
+        if previous_questions:
+          query = query.filter(Question.id.notin_(previous_questions))
+      
+      question = query.order_by(func.random()).first()
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
+      if question:
+        return jsonify({
+          'question': question.format()
+        })
+      else:
+        # in case there are no more questions in the category,
+        # return empty response, thus ending the game
+        return jsonify({
+          'question': None
+        })
+
+    except Exception as err:
+      print(err)
+      abort(400)
+
+
   @app.errorhandler(400)
   def bad_request(error):
     return jsonify({
       'message': 'Bad Request',
       'success': False
     }), 400
+
 
   @app.errorhandler(404)
   def not_found(error):

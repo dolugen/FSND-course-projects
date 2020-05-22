@@ -177,8 +177,46 @@ class TriviaTestCase(unittest.TestCase):
         '''Test that getting one question is unsupported'''
         response = self.client.get('/questions/1')
         self.assertEqual(response.status_code, 405)
-
     
+    def test_quizzes(self):
+        '''Test that quizzes endpoint returns a question'''
+        response = self.client.post('/quizzes')
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn('id', data['question'].keys())
+        self.assertIn('question', data['question'].keys())
+        self.assertIn('answer', data['question'].keys())
+        self.assertIn('category', data['question'].keys())
+    
+    def test_quizzes_by_category(self):
+        '''Test that quizzes can return question by category'''
+        category = Category.query.first()
+        response = self.client.post('/quizzes', json={'quiz_category': category.format() })
+        self.assertEqual(response.status_code, 200)
+
+        data = response.get_json()
+        self.assertEqual(data['question']['category'], category.id)
+    
+    def test_quizzes_for_bogus_category(self):
+        '''Test that quizzes endpoint return question normally
+        when a bogus category was requested'''
+        category = {'id': 1000, 'type': 'bogus'}
+        response = self.client.post('/quizzes', json={'quiz_category': category })
+        self.assertEqual(response.status_code, 200)
+
+        data = response.get_json()
+        self.assertIn('question', data)
+
+
+    def test_quizzes_return_new_question(self):
+        '''Test that quizzes return new question given the previous questions'''
+
+        previous_questions = [1,2,3,4,5]
+        response = self.client.post('/quizzes', json={ 'previousQuestions': previous_questions })
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertNotIn(data['question']['id'], previous_questions) 
+
 
 
 # Make the tests conveniently executable
