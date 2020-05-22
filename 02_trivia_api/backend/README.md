@@ -30,6 +30,10 @@ This will install all of the required packages we selected within the `requireme
 
 - [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension we'll use to handle cross origin requests from our frontend server. 
 
+#### Test Dependencies
+
+For testing, [SQLite3](https://sqlite.org/index.html) database is used.
+
 ## Database Setup
 With Postgres running, restore a database using the trivia.psql file provided. Change the owner name in the file to your database user.
 
@@ -54,49 +58,149 @@ Setting the `FLASK_ENV` variable to `development` will detect file changes and r
 
 Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` directory and the `__init__.py` file to find the application. 
 
-## Tasks
+## Endpoints
 
-One note before you delve into your tasks: for each endpoint you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior. 
-
-1. Use Flask-CORS to enable cross-domain requests and set response headers. 
-2. Create an endpoint to handle GET requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories. 
-3. Create an endpoint to handle GET requests for all available categories. 
-4. Create an endpoint to DELETE question using a question ID. 
-5. Create an endpoint to POST a new question, which will require the question and answer text, category, and difficulty score. 
-6. Create a POST endpoint to get questions based on category. 
-7. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
-8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
-9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
-
-REVIEW_COMMENT
-```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
-
-Endpoints
-GET '/categories'
-GET ...
-POST ...
-DELETE ...
-
-GET '/categories'
+`GET /categories`
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns:
+  - `200 OK` response with an object with a single key, categories, that contains a object of id: category_string key:value pairs. 
 
+Example response:
+```js
+{
+    '1' : "Science",
+    '2' : "Art",
+    '3' : "Geography",
+    '4' : "History",
+    '5' : "Entertainment",
+    '6' : "Sports"
+}
+```
+
+`GET /categories/<category_id>/questions`
+- Returns an object that contains a list of questions for the given category.
+- Request Path Arguments: `category_id`
+- Returns:
+  - `200 OK` response with an object with a single key, questions, with value as an array of question objects.
+  - `404 Not Found` response when an unknown category ID was provided.
+
+Example response:
+```js
+{
+    'questions': [
+        {
+            'id': 1,
+            'question': "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+            'answer': "Maya Angelou",
+            'category': 2,
+            'difficulty': 4
+        }
+    ]
+}
+```
+
+`GET /questions`
+- Returns an object that contains questions.
+- Request Arguments:
+  - `page`: Page number (optional, default: 1)
+  - `limit`: Page size (optional, default: 10)
+  - `searchTerm`: Question string filtering value
+- Returns:
+  - `200 OK` response with an object that contains questions and other values:
+    - `page`: Current page number
+    - `questions`: The question objects array
+    - `total_questions`: The total available questions
+    - `categories`: Object mapping of all categories in {id: name} form
+  - `404 Not Found` response when the given filter arguments produce no result.
+
+Example response:
+```js
+{
+    'questions': [
+        {
+            'id': 1,
+            'question': "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+            'answer': "Maya Angelou",
+            'category': 2,
+            'difficulty': 4
+        }
+    ],
+    'page': 1,
+    'total_questions': 100,
+    'categories': {
+        '1' : "Science",
+        '2' : "Art",
+        '3' : "Geography",
+        '4' : "History",
+        '5' : "Entertainment",
+        '6' : "Sports"
+    }
+}
+```
+
+`POST /questions`
+- Adds a new question. Accepts a question object.
+- Request Body:
+  - `question`: Question string
+  - `answer`: Answer string
+  - `category`: Category ID
+  - `difficulty`: Difficulty score
+- Returns:
+  - `201 Created` response when a new record was successfully created.
+  - `400 Bad Request` response when any of the fields are missing.
+
+Example request:
+```js
+{
+    'question': "New question string",
+    'answer': "The answer string",
+    'category': 2,
+    'difficulty': 4
+}
+```
+
+`DELETE /questions/<question_id>`
+- Deletes a question from the app.
+- Request Path Arguments: `question_id`
+- Returns:
+  - `200 OK` response when the question was deleted.
+  - `404 Not Found` response when an unknown question was specified.
+  - `400 Bad Request` response if given argument was invalid.
+
+`POST /quizzes`
+- Handles the quiz gameplay, provides questions.
+- Request body:
+  - `previous_questions`: Array of question IDs that the player already seen (optional)
+  - `quiz_category`: Question category ID (optional)
+- Returns:
+  - `200 OK` response with an object with one key, question, that contains a question object.
+  - `400 Bad Request` response when a request parameter is invalid.
+
+Example request:
+```js
+{
+    'previous_questions': [1,2,3],
+    'quiz_category': 1
+}
+```
+
+Example response:
+```js
+{
+    'question': {
+        'id': 1,
+        'question': "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+        'answer': "Maya Angelou",
+        'category': 2,
+        'difficulty': 4
+    }
+}
 ```
 
 
 ## Testing
 To run the tests, run
 ```
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
 python test_flaskr.py
 ```

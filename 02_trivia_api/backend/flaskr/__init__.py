@@ -59,14 +59,12 @@ def create_app(test_config=None):
     if len(questions) == 0:
       abort(404)
     
-    categories = dict([(c.id, c.type.lower()) for c in Category.query.all()])
+    categories = dict([(str(c.id), c.type.lower()) for c in Category.query.all()])
     return jsonify({
-      'success': True,
       'page': page,
       'questions': questions,
       'total_questions': total_questions,
-      'categories': categories,
-      'current_category': None
+      'categories': categories
     })
 
 
@@ -81,7 +79,6 @@ def create_app(test_config=None):
     result = [q.format() for q in result]
     
     return jsonify({
-      'success': True,
       'questions': result
     })
 
@@ -89,7 +86,7 @@ def create_app(test_config=None):
   @app.route('/categories')
   def list_categories():
     '''Returns the list of categories'''
-    categories = dict([(c.id, c.type.lower()) for c in Category.query.all()])
+    categories = dict([(str(c.id), c.type.lower()) for c in Category.query.all()])
     return jsonify({
       'categories': categories 
     })
@@ -189,6 +186,14 @@ def create_app(test_config=None):
       'message': 'Unprocessable Entity',
       'success': False
     }), 422
+  
+  
+  @app.errorhandler(500)
+  def unprocessable(error):
+    return jsonify({
+      'message': 'Server Error',
+      'success': False
+    }), 500
 
   return app
 

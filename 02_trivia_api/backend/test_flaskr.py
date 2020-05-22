@@ -44,7 +44,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['total_questions'], 19)
         self.assertGreater(len(data['questions']), 0)
         self.assertIn('categories', data)
-        self.assertIn('current_category', data)
         # question structure
         question = data['questions'][0]
         self.assertIn('id', question.keys())
@@ -131,7 +130,8 @@ class TriviaTestCase(unittest.TestCase):
     
     def test_search_empty(self):
         '''Test search for a non-existing question'''
-        pass
+        response = self.client.get(f'/questions?searchTerm=poiw4tuvmpoi')
+        self.assertEqual(response.status_code, 404)
     
     def test_add_question(self):
         questions_initial = self.client.get('/questions').get_json()
@@ -207,12 +207,11 @@ class TriviaTestCase(unittest.TestCase):
         data = response.get_json()
         self.assertIn('question', data)
 
-
     def test_quizzes_return_new_question(self):
         '''Test that quizzes return new question given the previous questions'''
 
         previous_questions = [1,2,3,4,5]
-        response = self.client.post('/quizzes', json={ 'previousQuestions': previous_questions })
+        response = self.client.post('/quizzes', json={ 'previous_questions': previous_questions })
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertNotIn(data['question']['id'], previous_questions) 
