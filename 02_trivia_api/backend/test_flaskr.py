@@ -45,6 +45,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertGreater(len(data['questions']), 0)
         self.assertIn('categories', data)
         self.assertIn('current_category', data)
+        # question structure
+        question = data['questions'][0]
+        self.assertIn('id', question.keys())
+        self.assertIn('question', question.keys())
+        self.assertIn('answer', question.keys())
+        self.assertIn('difficulty', question.keys())
+        self.assertIn('category', question.keys())
     
     def test_get_questions_pagination(self):
         '''Test pagination with default page size'''
@@ -151,6 +158,27 @@ class TriviaTestCase(unittest.TestCase):
         '''Test that adding a question while missing fields fails'''
         response = self.client.post('/questions', json={})
         self.assertEqual(response.status_code, 400)
+    
+    def test_delete_question(self):
+        '''Test that deleting a question works'''
+        response = self.client.get('/questions')
+        self.assertEqual(response.status_code, 200)
+        question_to_delete = response.get_json()['questions'][0]
+
+        response = self.client.delete(f'/questions/{question_to_delete["id"]}')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get('/questions')
+        self.assertEqual(response.status_code, 200)
+        question_now_in_front = response.get_json()['questions'][0]
+        self.assertNotEqual(question_to_delete['id'], question_now_in_front['id'])
+    
+    def test_get_question(self):
+        '''Test that getting one question is unsupported'''
+        response = self.client.get('/questions/1')
+        self.assertEqual(response.status_code, 405)
+
+    
 
 
 # Make the tests conveniently executable
