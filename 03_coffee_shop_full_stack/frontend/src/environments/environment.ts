@@ -9,6 +9,6 @@ export const environment = {
     url: 'udacity-coffeeshop.eu', // the auth0 domain prefix
     audience: 'coffeeshop-api', // the audience set for the auth0 app
     clientId: 'SxaeMJ20JeffaV11n10GtGP7fAR8aMAC', // the client id generated for the auth0 app
-    callbackURL: 'http://localhost:4201', // the base url of the running ionic application. 
+    callbackURL: 'http://localhost:4200', // the base url of the running ionic application. 
   }
 };

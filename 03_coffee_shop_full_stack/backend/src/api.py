@@ -19,14 +19,6 @@ CORS(app)
 # db_drop_and_create_all()
 
 ## ROUTES
-'''
-@TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
 @app.route('/drinks')
 def get_drinks():
     result = {
@@ -44,6 +36,14 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail')
+def get_drinks_detail():
+    result = {
+        'success': True,
+        'drinks': [drink.long() for drink in Drink.query.all()]
+    }
+    return jsonify(result)
+
 
 
 '''
@@ -55,6 +55,18 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['POST'])
+def add_drink():
+    data = request.get_json()
+    if not data or 'title' not in data or 'recipe' not in data:
+        abort(400)
+
+    drink = Drink(title=data['title'], recipe=json.dumps(data['recipe']))
+    drink.insert()
+    return jsonify({
+        'success': True,
+        'drinks': [drink.long()]
+    })
 
 
 '''
@@ -68,6 +80,25 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+def update_drink(drink_id):
+    drink = Drink.query.get(drink_id)
+    if not drink:
+        abort(404)
+
+    data = request.get_json()
+    if not data or ('title' not in data and 'recipe' not in data):
+        abort(400)
+
+    if 'title' in data:
+        drink.title = request.get_json()['title']
+    if 'recipe' in data:
+        drink.recipe = json.dumps(request.get_json()['recipe'])
+    drink.update()
+    return jsonify({
+        'success': True,
+        'drinks': [drink.long()]
+    })
 
 
 '''
@@ -80,6 +111,17 @@ def get_drinks():
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:drink_id>', methods=['DELETE'])
+def delete_drink(drink_id):
+    drink = Drink.query.get(drink_id)
+    if not drink:
+        abort(404)
+
+    drink.delete()
+    return jsonify({
+        'success': True,
+        'delete': drink_id
+    })
 
 
 ## Error Handling
