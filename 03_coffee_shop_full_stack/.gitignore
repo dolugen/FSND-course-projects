@@ -2,6 +2,7 @@ venv/
 .vscode/
 __pycache__/
 test.db
+backend/src/database/database.db
 
 # OS generated files #
 ######################
